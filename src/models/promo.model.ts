@@ -19,8 +19,18 @@ export interface IPromo extends Document {
 
 const promoSchema = new Schema<IPromo>(
   {
-    code: { type: String, required: true, unique: true, uppercase: true, trim: true },
-    discountType: { type: String, enum: ["percentage", "fixed"], required: true },
+    code: {
+      type: String,
+      required: true,
+      unique: true,
+      uppercase: true,
+      trim: true,
+    },
+    discountType: {
+      type: String,
+      enum: ["percentage", "fixed"],
+      required: true,
+    },
     discountValue: { type: Number, required: true, min: 0 },
     minOrderAmount: { type: Number, min: 0 },
     maxDiscountAmount: { type: Number, min: 0 },
@@ -30,7 +40,7 @@ const promoSchema = new Schema<IPromo>(
     usedCount: { type: Number, min: 0, default: 0 },
     isActive: { type: Boolean, default: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Promo = model<IPromo>("Promo", promoSchema);

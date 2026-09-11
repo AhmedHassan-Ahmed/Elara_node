@@ -16,7 +16,7 @@ const categorySchema = new Schema<ICategory>(
     image: { type: String, trim: true },
     isActive: { type: Boolean, default: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Category = model<ICategory>("Category", categorySchema);

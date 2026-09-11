@@ -15,8 +15,18 @@ export interface IPayment extends Document {
 
 const paymentSchema = new Schema<IPayment>(
   {
-    order: { type: Schema.Types.ObjectId, ref: "Order", required: true, unique: true },
-    stripePaymentId: { type: String, required: true, unique: true, index: true },
+    order: {
+      type: Schema.Types.ObjectId,
+      ref: "Order",
+      required: true,
+      unique: true,
+    },
+    stripePaymentId: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
     amount: { type: Number, required: true, min: 0 },
     currency: { type: String, required: true, lowercase: true, default: "usd" },
     status: {
@@ -27,7 +37,7 @@ const paymentSchema = new Schema<IPayment>(
     },
     paidAt: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Payment = model<IPayment>("Payment", paymentSchema);

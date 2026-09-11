@@ -18,7 +18,7 @@ const reviewSchema = new Schema<IReview>(
     comment: { type: String, trim: true },
     isActive: { type: Boolean, default: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 reviewSchema.index({ user: 1, product: 1 }, { unique: true });

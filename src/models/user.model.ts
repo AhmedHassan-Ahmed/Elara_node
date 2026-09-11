@@ -6,10 +6,11 @@ export interface IUser extends Document {
   name: string;
   email: string;
   phone?: string;
-  password: string;
+  password?: string;
   role: UserRole;
   isEmailConfirmed: boolean;
   isActive: boolean;
+  googleId?: string;
   wishlist: Types.ObjectId[];
   address?: {
     street?: string;
@@ -25,12 +26,23 @@ export interface IUser extends Document {
 const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
     phone: { type: String, trim: true },
-    password: { type: String, required: true, select: false },
-    role: { type: String, enum: ["customer", "seller", "admin"], default: "customer" },
+    password: { type: String, select: false },
+    role: {
+      type: String,
+      enum: ["customer", "seller", "admin"],
+      default: "customer",
+    },
     isEmailConfirmed: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
+    googleId: { type: String, sparse: true },
     wishlist: [{ type: Schema.Types.ObjectId, ref: "Product" }],
     address: {
       street: String,
@@ -40,7 +52,7 @@ const userSchema = new Schema<IUser>(
       postalCode: String,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const User = model<IUser>("User", userSchema);

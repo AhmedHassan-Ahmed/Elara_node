@@ -1,12 +1,7 @@
 import { Schema, model, Document, Types } from "mongoose";
 
 export type OrderStatus =
-  | "pending"
-  | "paid"
-  | "processing"
-  | "shipped"
-  | "delivered"
-  | "cancelled";
+  "pending" | "paid" | "processing" | "shipped" | "delivered" | "cancelled";
 
 export interface IOrderItem {
   product: Types.ObjectId;
