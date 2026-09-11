@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Google OAuth Local Development Success Verification</title>
+    <style>
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 0 20px;
+        background-color: #0f172a;
+        color: #f8fafc;
+        line-height: 1.6;
+      }
+      .card {
+        background-color: #1e293b;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        border: 1px solid #334155;
+      }
+      h1 {
+        color: #38bdf8;
+        font-size: 24px;
+        margin-top: 0;
+      }
+      h2 {
+        color: #94a3b8;
+        font-size: 18px;
+        margin-top: 0;
+      }
+      .status-box {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+      .status-card {
+        flex: 1;
+        background-color: #0f172a;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid #334155;
+      }
+      .badge-success {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 4px;
+        background-color: #16a34a;
+        color: white;
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .badge-error {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 4px;
+        background-color: #dc2626;
+        color: white;
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .user-details {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+        font-size: 14px;
+      }
+      .user-details td {
+        padding: 8px 12px;
+        border-bottom: 1px solid #334155;
+      }
+      .user-details td:first-child {
+        color: #94a3b8;
+        width: 35%;
+        font-weight: 500;
+      }
+      .user-details td:last-child {
+        color: #38bdf8;
+        font-family: monospace;
+      }
+      pre {
+        background-color: #090d16;
+        padding: 16px;
+        border-radius: 8px;
+        overflow-x: auto;
+        color: #4ade80;
+        font-size: 13px;
+        border: 1px solid #1e293b;
+      }
+      .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 6px;
+        background-color: #2563eb;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+      }
+      .btn:hover {
+        background-color: #1d4ed8;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Google OAuth Local Development Success</h1>
+    <p style="color: #94a3b8">
+      Development verification page proving standard authentication contract
+      completion.
+    </p>
+
+    <div class="status-box">
+      <div class="status-card">
+        <div style="font-size: 13px; color: #94a3b8; margin-bottom: 6px">
+          Google Authentication
+        </div>
+        <span id="googleAuthBadge" class="badge-success">SUCCESS</span>
+      </div>
+      <div class="status-card">
+        <div style="font-size: 13px; color: #94a3b8; margin-bottom: 6px">
+          Application Token Exchange
+        </div>
+        <span id="appAuthBadge" class="badge-success">EXCHANGING...</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Authenticated User Profile</h2>
+      <table class="user-details">
+        <tr>
+          <td>ID (user.id):</td>
+          <td id="userId">loading...</td>
+        </tr>
+        <tr>
+          <td>Email (user.email):</td>
+          <td id="userEmail">loading...</td>
+        </tr>
+        <tr>
+          <td>Name (user.name):</td>
+          <td id="userName">loading...</td>
+        </tr>
+        <tr>
+          <td>Role (user.role):</td>
+          <td id="userRole">loading...</td>
+        </tr>
+        <tr>
+          <td>Email Confirmed:</td>
+          <td id="userEmailConfirmed">loading...</td>
+        </tr>
+        <tr>
+          <td>Active Status:</td>
+          <td id="userActive">loading...</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Live Profile Verification: GET /api/auth/me</h2>
+      <p style="color: #cbd5e1; font-size: 13px">
+        Direct authenticated call to <code>GET /api/auth/me</code> using
+        application <code>accessToken</code> obtained from OAuth exchange code.
+      </p>
+      <div style="margin-bottom: 12px">
+        HTTP Status: <strong id="meHttpStatus" style="color: #4ade80">-</strong>
+      </div>
+      <pre id="meResponseRaw">
+// GET /api/auth/me JSON response will appear here...</pre>
+
+      <div style="margin-top: 20px">
+        <a class="btn" href="/index.html">Return to OAuth Demo Launcher</a>
+      </div>
+    </div>
+
+    <script>
+      async function runDevVerification() {
+        const appBadge = document.getElementById("appAuthBadge");
+        const urlParams = new URLSearchParams(window.location.search);
+        const exchangeCode = urlParams.get("code");
+
+        let accessToken = "";
+
+        try {
+          if (exchangeCode) {
+            console.log("Exchanging single-use OAuth code:", exchangeCode);
+            const exchangeRes = await fetch("/api/auth/google/exchange", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ code: exchangeCode }),
+            });
+
+            const exchangeData = await exchangeRes.json();
+            if (
+              exchangeRes.ok &&
+              exchangeData.success &&
+              exchangeData.data?.accessToken
+            ) {
+              accessToken = exchangeData.data.accessToken;
+              appBadge.textContent = "SUCCESS (EXCHANGED)";
+              appBadge.className = "badge-success";
+            } else {
+              appBadge.textContent = "EXCHANGE FAILED";
+              appBadge.className = "badge-error";
+              document.getElementById("meHttpStatus").textContent =
+                exchangeRes.status + " Error";
+              document.getElementById("meResponseRaw").textContent =
+                JSON.stringify(exchangeData, null, 2);
+              return;
+            }
+          } else {
+            console.log(
+              "No single-use code in URL. Falling back to refresh cookie check.",
+            );
+            const refreshRes = await fetch("/api/auth/refresh", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+            });
+            const refreshData = await refreshRes.json();
+            if (
+              refreshRes.ok &&
+              refreshData.success &&
+              refreshData.data?.accessToken
+            ) {
+              accessToken = refreshData.data.accessToken;
+              appBadge.textContent = "SUCCESS (COOKIE)";
+              appBadge.className = "badge-success";
+            } else {
+              appBadge.textContent = "NO SESSION";
+              appBadge.className = "badge-error";
+              document.getElementById("meResponseRaw").textContent =
+                JSON.stringify(refreshData, null, 2);
+              return;
+            }
+          }
+
+          const meRes = await fetch("/api/auth/me", {
+            method: "GET",
+            headers: {
+              Authorization: "Bearer " + accessToken,
+            },
+          });
+
+          document.getElementById("meHttpStatus").textContent =
+            meRes.status + " " + meRes.statusText;
+          const meData = await meRes.json();
+
+          document.getElementById("meResponseRaw").textContent = JSON.stringify(
+            meData,
+            null,
+            2,
+          );
+
+          if (meRes.ok && meData.success && meData.data?.user) {
+            const user = meData.data.user;
+            document.getElementById("userId").textContent = user.id || "-";
+            document.getElementById("userEmail").textContent =
+              user.email || "-";
+            document.getElementById("userName").textContent = user.name || "-";
+            document.getElementById("userRole").textContent = user.role || "-";
+            document.getElementById("userEmailConfirmed").textContent =
+              user.isEmailConfirmed ? "true (YES)" : "false (NO)";
+            document.getElementById("userActive").textContent = user.isActive
+              ? "true (YES)"
+              : "false (NO)";
+          }
+        } catch (err) {
+          appBadge.textContent = "NETWORK ERROR";
+          appBadge.className = "badge-error";
+          document.getElementById("meResponseRaw").textContent =
+            "Fetch Error: " + err.message;
+        }
+      }
+
+      window.addEventListener("DOMContentLoaded", runDevVerification);
+    </script>
+  </body>
+</html>
