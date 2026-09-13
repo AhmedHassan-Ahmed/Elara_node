@@ -10,6 +10,8 @@ export interface IUser extends Document {
   role: UserRole;
   isEmailConfirmed: boolean;
   isActive: boolean;
+  isDeleted: boolean;
+  deletedAt?: Date;
   googleId?: string;
   wishlist: Types.ObjectId[];
   address?: {
@@ -42,6 +44,8 @@ const userSchema = new Schema<IUser>(
     },
     isEmailConfirmed: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: { type: Date },
     googleId: { type: String, sparse: true },
     wishlist: [{ type: Schema.Types.ObjectId, ref: "Product" }],
     address: {
