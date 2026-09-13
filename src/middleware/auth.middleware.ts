@@ -40,7 +40,7 @@ export const authenticate = async (
   }
 
   const user = await User.findById(decoded.userId);
-  if (!user || !user.isActive) {
+  if (!user || !user.isActive || user.isDeleted) {
     return next(
       new AppError(
         401,

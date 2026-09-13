@@ -150,7 +150,7 @@ export const login = async (data: LoginDto) => {
   if (!user || !isMatch)
     throw new AppError(401, "INVALID_CREDENTIALS", "Invalid email or password");
 
-  if (!user.isActive)
+  if (!user.isActive || user.isDeleted)
     throw new AppError(
       403,
       "ACCOUNT_DEACTIVATED",

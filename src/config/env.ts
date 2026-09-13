@@ -35,4 +35,7 @@ export const env = {
   frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
   adminEmail: process.env.ADMIN_EMAIL || "admin@example.com",
   adminPassword: process.env.ADMIN_PASSWORD || "Admin123!@#",
+  cloudinaryCloudName: (process.env.CLOUDINARY_CLOUD_NAME || "").trim(),
+  cloudinaryApiKey: (process.env.CLOUDINARY_API_KEY || "").trim(),
+  cloudinaryApiSecret: (process.env.CLOUDINARY_API_SECRET || "").trim(),
 };
