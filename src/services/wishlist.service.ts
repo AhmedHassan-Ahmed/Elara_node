@@ -13,18 +13,26 @@ export const addToWishlist = async (userId: string, productId: string) => {
     throw new AppError(404, "PRODUCT_NOT_FOUND", "Product not found");
 
   const result = await User.updateOne(
-    { _id: userId },
+    { _id: userId, wishlist: { $ne: productId } },
     { $addToSet: { wishlist: productId } },
   );
 
-  return { added: result.modifiedCount > 0 };
+  return { added: result.matchedCount > 0 };
 };
 
 export const removeFromWishlist = async (userId: string, productId: string) => {
   const result = await User.updateOne(
-    { _id: userId },
+    { _id: userId, wishlist: productId },
     { $pull: { wishlist: productId } },
   );
+
+  if (result.matchedCount === 0) {
+    throw new AppError(
+      404,
+      "WISHLIST_ITEM_NOT_FOUND",
+      "Product not found in wishlist",
+    );
+  }
 
   return { removed: result.modifiedCount > 0 };
 };
