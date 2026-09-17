@@ -29,6 +29,7 @@ export const authenticate = async (
       new AppError(401, "INVALID_TOKEN", "Invalid or expired access token"),
     );
   }
+  
 
   if (decoded.sessionId) {
     const session = await Session.findById(decoded.sessionId);

@@ -2,11 +2,12 @@ import { Schema, model, Document, Types } from "mongoose";
 
 export type OrderStatus =
   | "pending"
-  | "paid"
+  | "confirmed"
   | "processing"
   | "shipped"
   | "delivered"
-  | "cancelled";
+  | "cancelled"
+  | "failed";
 
 export interface IOrderItem {
   product: Types.ObjectId;
@@ -79,11 +80,12 @@ const orderSchema = new Schema<IOrder>(
       type: String,
       enum: [
         "pending",
-        "paid",
+        "confirmed",
         "processing",
         "shipped",
         "delivered",
         "cancelled",
+        "failed",
       ],
       default: "pending",
       index: true,
