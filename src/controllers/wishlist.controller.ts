@@ -11,12 +11,7 @@ export const addToWishlist = async (
     throw new AppError(401, "UNAUTHORIZED", "Authentication required");
   const { productId } = req.body;
   const result = await wishlistService.addToWishlist(req.user.id, productId);
-  sendSuccess(
-    res,
-    200,
-    result.added ? "Product added to wishlist" : "Product already in wishlist",
-    result,
-  );
+  sendSuccess(res, 200, "Product added to wishlist", result);
 };
 
 export const removeFromWishlist = async (

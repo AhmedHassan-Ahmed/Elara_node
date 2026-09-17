@@ -17,7 +17,15 @@ export const addToWishlist = async (userId: string, productId: string) => {
     { $addToSet: { wishlist: productId } },
   );
 
-  return { added: result.matchedCount > 0 };
+  if (result.matchedCount === 0) {
+    throw new AppError(
+      409,
+      "WISHLIST_ITEM_ALREADY_EXISTS",
+      "Product already in wishlist",
+    );
+  }
+
+  return { added: true };
 };
 
 export const removeFromWishlist = async (userId: string, productId: string) => {
@@ -34,7 +42,7 @@ export const removeFromWishlist = async (userId: string, productId: string) => {
     );
   }
 
-  return { removed: result.modifiedCount > 0 };
+  return { removed: true };
 };
 
 export interface ListWishlistQuery {

@@ -1,10 +1,16 @@
 import { Schema, model, Document, Types } from "mongoose";
 
 export type OrderStatus =
-  "pending" | "paid" | "processing" | "shipped" | "delivered" | "cancelled";
+  | "pending"
+  | "paid"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
 
 export interface IOrderItem {
   product: Types.ObjectId;
+  seller: Types.ObjectId;
   name: string;
   price: number;
   quantity: number;
@@ -31,6 +37,12 @@ export interface IOrder extends Document {
 const orderItemSchema = new Schema<IOrderItem>(
   {
     product: { type: Schema.Types.ObjectId, ref: "Product", required: true },
+    seller: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
     name: { type: String, required: true, trim: true },
     price: { type: Number, required: true, min: 0 },
     quantity: { type: Number, required: true, min: 1 },
