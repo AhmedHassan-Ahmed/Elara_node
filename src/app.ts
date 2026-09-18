@@ -12,6 +12,8 @@ import categoryRoutes from "./routes/category.routes.js";
 import orderRoutes, { sellerOrderRouter } from "./routes/order.routes.js";
 import errorHandler from "./middleware/errorHandler.js";
 import cartRoutes from "./routes/cart.routes.js";
+import checkoutRoutes from "./routes/checkout.routes.js";
+import promoRoutes from "./routes/promo.routes.js";
 
 const app = express();
 
@@ -40,7 +42,8 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/seller/orders", sellerOrderRouter);
-
+app.use("/api/checkout", checkoutRoutes);
+app.use("/api/promos", promoRoutes);
 app.use(errorHandler);
 
 export default app;
