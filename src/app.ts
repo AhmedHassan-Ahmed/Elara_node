@@ -14,7 +14,7 @@ import errorHandler from "./middleware/errorHandler.js";
 import cartRoutes from "./routes/cart.routes.js";
 import checkoutRoutes from "./routes/checkout.routes.js";
 import promoRoutes from "./routes/promo.routes.js";
-
+import reviewRoutes from "./routes/review.routes.js";
 const app = express();
 
 app.use(
@@ -44,6 +44,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/seller/orders", sellerOrderRouter);
 app.use("/api/checkout", checkoutRoutes);
 app.use("/api/promos", promoRoutes);
+app.use("/api/reviews", reviewRoutes);
 app.use(errorHandler);
 
 export default app;

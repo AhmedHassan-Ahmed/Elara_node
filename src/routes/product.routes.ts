@@ -10,10 +10,35 @@ import {
   deleteProductSchema,
   listProductsSchema,
 } from "../validations/product.validation.js";
+import {
+  createReview,
+  listProductReviews,
+} from "../controllers/review.controller.js";
+import {
+  createReviewSchema,
+  listProductReviewsSchema,
+} from "../validations/review.validation.js";
 
 const router = Router();
 
 router.get("/", validate(listProductsSchema), productController.getProducts);
+
+
+router.get(
+  "/:productId/reviews",
+  validate(listProductReviewsSchema),
+  listProductReviews,
+);
+
+router.post(
+  "/:productId/reviews",
+  authenticate,
+  authorize("customer"),
+  validate(createReviewSchema),
+  createReview,
+);
+
+
 router.get(
   "/:productId",
   validate(getProductByIdSchema),
@@ -28,6 +53,7 @@ router.post(
   validate(createProductSchema),
   productController.createProduct,
 );
+
 router.patch(
   "/:productId",
   authenticate,
@@ -36,6 +62,7 @@ router.patch(
   validate(updateProductSchema),
   productController.updateProduct,
 );
+
 router.delete(
   "/:productId",
   authenticate,
