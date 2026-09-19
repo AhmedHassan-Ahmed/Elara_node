@@ -2,6 +2,7 @@ import { Router } from "express";
 import * as adminController from "../controllers/admin.controller.js";
 import * as bannerController from "../controllers/banner.controller.js";
 import * as promoController from "../controllers/promo.controller.js";
+import * as reviewController from "../controllers/review.controller.js";
 import { validate } from "../middleware/validation.middleware.js";
 import { authenticate, authorize } from "../middleware/auth.middleware.js";
 import { uploadSingleImage } from "../middleware/upload.middleware.js";
@@ -31,9 +32,12 @@ import {
   listPromosSchema,
 } from "../validations/promo.validation.js";
 
+import { moderateReviewSchema } from "../validations/review.validation.js";
+
 const router = Router();
 
 router.use(authenticate, authorize("admin"));
+
 
 router.get("/users", validate(listUsersSchema), adminController.getUsers);
 router.get(
@@ -52,6 +56,7 @@ router.delete(
   adminController.deactivateUser,
 );
 
+
 router.get("/sellers", validate(listSellersSchema), adminController.getSellers);
 router.get(
   "/sellers/:sellerId",
@@ -68,6 +73,7 @@ router.delete(
   validate(getSellerByIdSchema),
   adminController.deactivateSeller,
 );
+
 
 router.get(
   "/banners",
@@ -97,6 +103,7 @@ router.delete(
   bannerController.deleteBanner,
 );
 
+
 router.get("/promos", validate(listPromosSchema), promoController.getPromos);
 router.get(
   "/promos/:promoId",
@@ -117,6 +124,13 @@ router.delete(
   "/promos/:promoId",
   validate(deletePromoSchema),
   promoController.deletePromo,
+);
+
+
+router.patch(
+  "/reviews/:reviewId",
+  validate(moderateReviewSchema),
+  reviewController.moderateReview,
 );
 
 export default router;
