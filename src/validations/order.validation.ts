@@ -80,7 +80,6 @@ export const updateOrderStatusSchema = z.object({
   }),
 });
 
-// Seller Orders
 
 
 export const listSellerOrdersSchema = z.object({

@@ -23,7 +23,7 @@ const paymentSchema = new Schema<IPayment>(
     },
     stripePaymentId: {
       type: String,
-      required: true,
+      required: false,
       unique: true,
       index: true,
     },

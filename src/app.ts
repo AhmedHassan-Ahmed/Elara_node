@@ -13,8 +13,13 @@ import orderRoutes, { sellerOrderRouter } from "./routes/order.routes.js";
 import errorHandler from "./middleware/errorHandler.js";
 import cartRoutes from "./routes/cart.routes.js";
 import checkoutRoutes from "./routes/checkout.routes.js";
+
+
 import promoRoutes from "./routes/promo.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
+
+import paymentRoutes from "./routes/payment.routes.js";
+
 const app = express();
 
 app.use(
@@ -25,6 +30,8 @@ app.use(
 );
 app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser());
+
+app.use("/api/webhooks", paymentRoutes);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
@@ -40,11 +47,12 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/checkout", checkoutRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/seller/orders", sellerOrderRouter);
-app.use("/api/checkout", checkoutRoutes);
 app.use("/api/promos", promoRoutes);
 app.use("/api/reviews", reviewRoutes);
+
 app.use(errorHandler);
 
 export default app;
