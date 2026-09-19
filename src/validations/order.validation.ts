@@ -1,9 +1,11 @@
 import { z } from "zod";
 import { Types } from "mongoose";
 
-const objectIdSchema = z.string().refine((val) => Types.ObjectId.isValid(val), {
-  message: "Invalid ID format",
-});
+const objectIdSchema = z
+  .string()
+  .refine((val) => Types.ObjectId.isValid(val), {
+    message: "Invalid ID format",
+  });
 
 export const createOrderSchema = z.object({
   body: z.object({
@@ -69,9 +71,16 @@ export const updateOrderStatusSchema = z.object({
   }),
 
   body: z.object({
-    status: z.enum(["processing", "shipped", "delivered", "cancelled"]),
+    status: z.enum([
+      "processing",
+      "shipped",
+      "delivered",
+      "cancelled",
+    ]),
   }),
 });
+
+
 
 export const listSellerOrdersSchema = z.object({
   query: z.object({
