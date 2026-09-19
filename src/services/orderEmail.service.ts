@@ -41,8 +41,8 @@ export async function sendOrderCreatedEmail(order: IOrder): Promise<void> {
 export async function sendOrderStatusEmail(order: IOrder): Promise<void> {
   try {
     const subject = STATUS_EMAIL_SUBJECTS[order.status];
-    if (!subject) return; // no email for this status (e.g. "processing")
-
+    if (!subject) return; 
+    
     const user = await getOrderRecipient(order);
     if (!user) return;
 

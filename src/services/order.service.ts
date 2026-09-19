@@ -191,8 +191,6 @@ export async function updateOrderStatus(
   return order;
 }
 
-// Seller Orders
-
 export interface ListSellerOrdersQuery {
   page?: number;
   limit?: number;

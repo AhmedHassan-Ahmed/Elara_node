@@ -22,7 +22,6 @@ import {
 
 const router = Router();
 
-// Admin routes — must be declared before "/:orderId"
 router.get(
   "/admin",
   authenticate,
@@ -38,7 +37,6 @@ router.patch(
   updateOrderStatusHandler,
 );
 
-// Customer routes
 router.post("/", authenticate, validate(createOrderSchema), createOrderHandler);
 router.get(
   "/",
@@ -55,7 +53,6 @@ router.get(
 
 export default router;
 
-// Seller Orders — separate router, own auth scope, mounted at its own path in app.ts
 export const sellerOrderRouter = Router();
 
 sellerOrderRouter.use(authenticate, authorize("seller"));
