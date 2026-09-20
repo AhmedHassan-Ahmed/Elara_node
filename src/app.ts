@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { rateLimit } from "express-rate-limit";
 import wishlistRoutes from "./routes/wishlist.routes.js";
@@ -22,12 +21,7 @@ import paymentRoutes from "./routes/payment.routes.js";
 
 const app = express();
 
-app.use(
-  helmet({
-    contentSecurityPolicy: false,
-    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
-  }),
-);
+
 app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser());
 
