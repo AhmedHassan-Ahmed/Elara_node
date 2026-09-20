@@ -3,19 +3,19 @@ import "dotenv/config";
 import app from "./app.js";
 import connectDB from "./config/db.js";
 
-const PORT = process.env.PORT || 5000;
-
-async function startServer() {
+const handler = async (req: any, res: any) => {
   try {
     await connectDB();
 
-    app.listen(PORT, () => {
-      console.log("server is online on port " + PORT);
-    });
+    return app(req, res);
   } catch (error) {
-    console.error("Server startup failed because MongoDB could not connect");
-    process.exit(1);
-  }
-}
+    console.error("MongoDB connection failed:", error);
 
-startServer();
+    return res.status(500).json({
+      success: false,
+      message: "Database connection failed",
+    });
+  }
+};
+
+export default handler;
