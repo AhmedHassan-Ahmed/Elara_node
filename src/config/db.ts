@@ -1,47 +1,25 @@
 import mongoose from "mongoose";
-import { env } from "./env.js";
 
-mongoose.set("bufferCommands", false);
-mongoose.set("strictQuery", true);
+let cached = (global as any).mongooseConn;
 
-let isConnecting = false;
-
-export default async function connectDB() {
-  const mongoUri = env.mongodbUri?.trim();
-
-  if (!mongoUri) {
-    throw new Error("MONGODB_URI is not configured");
-  }
-
-  // Already connected
-  if (mongoose.connection.readyState === 1) {
-    return;
-  }
-
-  // Already connecting
-  if (isConnecting) {
-    return;
-  }
-
-  try {
-    isConnecting = true;
-
-    console.log("MongoDB: connecting...");
-
-    await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 45000,
-      maxPoolSize: 10,
-      retryWrites: true,
-    });
-
-    console.log("MongoDB: connected");
-  } catch (error) {
-    console.error("MongoDB: CONNECTION FAILED");
-    console.error(error);
-
-    throw error;
-  } finally {
-    isConnecting = false;
-  }
+if (!cached) {
+  cached = (global as any).mongooseConn = {
+    conn: null,
+    promise: null,
+  };
 }
+
+const connectDB = async () => {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    cached.promise = mongoose
+      .connect(process.env.MONGO_URL!)
+      .then((m) => m);
+  }
+
+  cached.conn = await cached.promise;
+  return cached.conn;
+};
+
+export default connectDB;
