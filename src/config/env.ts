@@ -44,4 +44,7 @@ export const env = {
   cloudinaryCloudName: (process.env.CLOUDINARY_CLOUD_NAME || "").trim(),
   cloudinaryApiKey: (process.env.CLOUDINARY_API_KEY || "").trim(),
   cloudinaryApiSecret: (process.env.CLOUDINARY_API_SECRET || "").trim(),
+  vapidPublicKey: process.env.VAPID_PUBLIC_KEY || "",
+  vapidPrivateKey: process.env.VAPID_PRIVATE_KEY || "",
+  vapidSubject: process.env.VAPID_SUBJECT || "mailto:admin@example.com",
 };
