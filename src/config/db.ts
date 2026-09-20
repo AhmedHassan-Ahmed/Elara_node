@@ -13,25 +13,20 @@ export default async function connectDB() {
   mongoose.set("bufferCommands", false);
   mongoose.set("strictQuery", true);
 
-  mongoose.connection.on("error", (error) => {
-    console.error("MongoDB connection error:", error);
-  });
-
-  mongoose.connection.on("disconnected", () => {
-    console.warn("MongoDB disconnected");
-  });
-
   try {
+    console.log("MongoDB: connecting...");
+
     await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
       maxPoolSize: 10,
       retryWrites: true,
     });
 
-    console.log("database connected");
-  } catch (err) {
-    console.error("database connection error", err);
-    throw err;
+    console.log("MongoDB: connected");
+  } catch (error) {
+    console.error("MongoDB: CONNECTION FAILED");
+    console.error(error);
+    throw error;
   }
 }
