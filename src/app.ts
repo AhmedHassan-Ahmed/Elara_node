@@ -36,8 +36,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 100 }));
 
+import mongoose from "mongoose";
+
 app.get("/api/health", (req, res) => {
-  res.status(200).json({ success: true, message: "server is running" });
+  res.status(200).json({
+    success: true,
+    message: "server is running",
+    mongodb: mongoose.connection.readyState,
+  });
 });
 
 app.use("/api/auth", authRoutes);
