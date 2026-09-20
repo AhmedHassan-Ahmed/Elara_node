@@ -9,7 +9,7 @@ const handler = async (req: any, res: any) => {
 
     return app(req, res);
   } catch (error) {
-    console.error("MongoDB connection failed:", error);
+    console.error("Server startup failed because MongoDB could not connect");
 
     return res.status(500).json({
       success: false,
