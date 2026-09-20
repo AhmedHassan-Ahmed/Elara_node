@@ -6,7 +6,7 @@ import {
   OrderStatus,
 } from "../models/order.model.js";
 import { Product } from "../models/product.model.js";
-import { ICartItem } from "../models/cart.model.js";
+import { Cart, ICartItem } from "../models/cart.model.js";
 import AppError from "../error/AppError.js";
 import { generateOrderNumber } from "../utils/helpers.js";
 import {
@@ -16,17 +16,23 @@ import {
 import { UserAuthContext } from "../types/common.types.js";
 import { canTransition, PAYMENT_ONLY_STATUSES } from "../utils/orderStatus.js";
 import * as orderEmailService from "./orderEmail.service.js";
+import * as promoService from "./promo.service.js";
+import { calculateBreakdown } from "./checkout.service.js";
+
+
 
 interface CreateOrderInput {
   userId: Types.ObjectId;
   cartItems: ICartItem[];
   shippingAddress: IOrder["shippingAddress"];
+  promoCode?: string; 
 }
 
 export async function createOrder({
   userId,
   cartItems,
   shippingAddress,
+  promoCode,
 }: CreateOrderInput): Promise<IOrder> {
   if (!cartItems.length) {
     throw new AppError(
@@ -35,6 +41,10 @@ export async function createOrder({
       "Cannot create an order from an empty cart",
     );
   }
+
+
+  const breakdown = await calculateBreakdown(cartItems, promoCode);
+
 
   const items: IOrderItem[] = [];
 
@@ -74,26 +84,32 @@ export async function createOrder({
     });
   }
 
-  const totalAmount = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0,
-  );
-
   const orderNumber = generateOrderNumber();
 
+ 
   const order = await Order.create({
     user: userId,
     orderNumber,
     items,
-    totalAmount,
+    totalAmount: breakdown.total,
     shippingAddress,
     status: "pending",
   });
+
+ 
+  await Cart.findOneAndUpdate({ user: userId }, { items: [] });
+
+
+  if (breakdown.promoId) {
+    await promoService.incrementPromoUsage(breakdown.promoId);
+  }
 
   void orderEmailService.sendOrderCreatedEmail(order);
 
   return order;
 }
+
+
 
 export async function getOrderHistory(
   userId: Types.ObjectId,
@@ -129,6 +145,8 @@ export async function getOrderById(user: UserAuthContext, orderId: string) {
 
   return order;
 }
+
+
 
 interface ListAllOrdersQuery {
   page?: number;
@@ -191,7 +209,7 @@ export async function updateOrderStatus(
   return order;
 }
 
-// Seller Orders
+
 
 export interface ListSellerOrdersQuery {
   page?: number;
