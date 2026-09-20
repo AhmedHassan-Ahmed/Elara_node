@@ -2,10 +2,10 @@ import "dotenv/config";
 
 export const env = {
   port: process.env.PORT || "5000",
-  mongodbUri:
-    process.env.MONGODB_URI ||
-    process.env.MONGO_URL ||
-    "mongodb://127.0.0.1:27017/e-commerce",
+mongodbUri:
+  process.env.MONGODB_URI ||
+  process.env.MONGO_URL ||
+  "",
   jwtSecret: process.env.JWT_SECRET || "default_super_secret_jwt_key_ean_stack",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "15m",
   refreshTokenExpiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || "7d",
