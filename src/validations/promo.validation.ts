@@ -60,3 +60,12 @@ export const listPromosSchema = z.object({
     status: z.enum(["active", "inactive"]).optional(),
   }),
 });
+export const validatePromoSchema = z.object({
+  body: z.object({
+    code: z
+      .string({ message: "Promo code is required" })
+      .trim()
+      .min(1, "Promo code is required")
+      .max(50, "Promo code is too long"),
+  }),
+});

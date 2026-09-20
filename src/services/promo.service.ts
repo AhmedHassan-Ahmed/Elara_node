@@ -127,3 +127,99 @@ export const listPromos = async (query: ListPromosQuery) => {
 
   return buildPaginatedResponse(promos, total, page, limit, "promos");
 };
+
+export interface ValidatePromoResult {
+  promo: {
+    _id: string;
+    code: string;
+    discountType: PromoDiscountType;
+    discountValue: number;
+  };
+  discount: number;
+  finalTotal: number;
+}
+
+export const validatePromoForOrder = async (
+  code: string,
+  orderTotal: number,
+): Promise<ValidatePromoResult> => {
+  if (!code || !code.trim()) {
+    throw new AppError(400, "PROMO_REQUIRED", "Promo code is required");
+  }
+
+  const formattedCode = code.trim().toUpperCase();
+  const promo = await Promo.findOne({ code: formattedCode });
+
+  if (!promo) {
+    throw new AppError(404, "PROMO_NOT_FOUND", "Promo code not found");
+  }
+
+  if (!promo.isActive) {
+    throw new AppError(
+      422,
+      "PROMO_INACTIVE",
+      "This promo code is no longer active",
+    );
+  }
+
+  const now = new Date();
+
+  if (promo.startsAt && promo.startsAt > now) {
+    throw new AppError(
+      422,
+      "PROMO_NOT_STARTED",
+      "This promo code is not yet active",
+    );
+  }
+
+  if (promo.expiresAt && promo.expiresAt < now) {
+    throw new AppError(422, "PROMO_EXPIRED", "This promo code has expired");
+  }
+
+  if (promo.usageLimit !== undefined && promo.usedCount >= promo.usageLimit) {
+    throw new AppError(
+      422,
+      "PROMO_USAGE_LIMIT_REACHED",
+      "This promo code has reached its usage limit",
+    );
+  }
+
+  if (promo.minOrderAmount !== undefined && orderTotal < promo.minOrderAmount) {
+    throw new AppError(
+      422,
+      "PROMO_MIN_ORDER_NOT_MET",
+      `Minimum order amount for this promo is ${promo.minOrderAmount}`,
+    );
+  }
+
+  let discount = 0;
+  if (promo.discountType === "percentage") {
+    discount = (orderTotal * promo.discountValue) / 100;
+    if (
+      promo.maxDiscountAmount !== undefined &&
+      discount > promo.maxDiscountAmount
+    ) {
+      discount = promo.maxDiscountAmount;
+    }
+  } else {
+    discount = promo.discountValue;
+  }
+
+  if (discount > orderTotal) discount = orderTotal;
+  discount = +discount.toFixed(2);
+
+  return {
+    promo: {
+      _id: promo._id.toString(),
+      code: promo.code,
+      discountType: promo.discountType,
+      discountValue: promo.discountValue,
+    },
+    discount,
+    finalTotal: +(orderTotal - discount).toFixed(2),
+  };
+};
+
+export const incrementPromoUsage = async (promoId: string) => {
+  await Promo.findByIdAndUpdate(promoId, { $inc: { usedCount: 1 } });
+};
