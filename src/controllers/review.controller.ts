@@ -10,14 +10,12 @@ import {
   buildPaginatedResponse,
 } from "../utils/pagination.js";
 
-
 const ELIGIBLE_ORDER_STATUSES = [
   "confirmed",
   "processing",
   "shipped",
   "delivered",
 ] as const;
-
 
 const hasPurchasedProduct = async (
   userId: string,
@@ -32,20 +30,18 @@ const hasPurchasedProduct = async (
   return Boolean(order);
 };
 
-
 export const createReview = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   const userId = req.user!.id;
-  const { productId } = req.params;
+  const productId = req.params.productId as string;
   const { rating, comment } = req.body;
 
   const product = await Product.findById(productId);
   if (!product) {
     throw new AppError(404, "PRODUCT_NOT_FOUND", "Product not found");
   }
-
 
   const eligible = await hasPurchasedProduct(userId, productId);
   if (!eligible) {
@@ -55,7 +51,6 @@ export const createReview = async (
       "You can only review products you have successfully purchased",
     );
   }
-
 
   const existing = await Review.findOne({ user: userId, product: productId });
   if (existing) {
@@ -76,12 +71,11 @@ export const createReview = async (
   sendSuccess(res, 201, "Review created successfully", { review });
 };
 
-
 export const listProductReviews = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
-  const { productId } = req.params;
+  const productId = req.params.productId as string;
   const { sort } = req.query as { sort?: string };
 
   const { page, limit, skip } = parsePagination(req.query);
@@ -110,17 +104,10 @@ export const listProductReviews = async (
     Review.countDocuments(filter),
   ]);
 
-  const result = buildPaginatedResponse(
-    reviews,
-    total,
-    page,
-    limit,
-    "reviews",
-  );
+  const result = buildPaginatedResponse(reviews, total, page, limit, "reviews");
 
   sendSuccess(res, 200, "Reviews retrieved successfully", result);
 };
-
 
 export const updateReview = async (
   req: Request,
@@ -150,7 +137,6 @@ export const updateReview = async (
 
   sendSuccess(res, 200, "Review updated successfully", { review });
 };
-
 
 export const deleteReview = async (
   req: Request,
