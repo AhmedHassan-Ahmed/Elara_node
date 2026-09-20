@@ -20,6 +20,11 @@ import reviewRoutes from "./routes/review.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 
 const app = express();
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 app.set("trust proxy", 1);
 app.use(cors({ origin: true, credentials: true }));
