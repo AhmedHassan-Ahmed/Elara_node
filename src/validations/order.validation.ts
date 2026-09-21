@@ -20,7 +20,7 @@ const shippingAddressSchema = z.object({
 
 export const createOrderSchema = z.object({
   body: z.object({
-    cartItems: z.array(cartItemSchema).min(1, "At least one item is required"),
+    cartId: objectId,
     shippingAddress: shippingAddressSchema,
     promoCode: z.string().trim().min(1).max(50).optional(),
   }),
