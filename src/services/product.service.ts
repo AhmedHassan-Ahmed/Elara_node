@@ -204,9 +204,9 @@ export const getProductById = async (productId: string) => {
     throw new AppError(404, "PRODUCT_NOT_FOUND", "Product not found");
   return product;
 };
-
 export const listProducts = async (query: ListProductsQuery) => {
   const { page, limit, skip } = parsePagination(query);
+
   const filter: Record<string, any> = {};
 
   if (query.status === "inactive") {
@@ -214,22 +214,42 @@ export const listProducts = async (query: ListProductsQuery) => {
   } else {
     filter.isActive = true;
   }
+  filter.stock = { $gt: 0 };
 
   if (query.search) {
-    filter.name = { $regex: escapeRegex(query.search), $options: "i" };
+    filter.name = {
+      $regex: escapeRegex(query.search),
+      $options: "i",
+    };
   }
-  if (query.category) filter.category = query.category;
+
+  if (query.category) {
+    filter.category = query.category;
+  }
 
   if (query.minPrice !== undefined || query.maxPrice !== undefined) {
     filter.price = {};
-    if (query.minPrice !== undefined) filter.price.$gte = query.minPrice;
-    if (query.maxPrice !== undefined) filter.price.$lte = query.maxPrice;
+
+    if (query.minPrice !== undefined) {
+      filter.price.$gte = query.minPrice;
+    }
+
+    if (query.maxPrice !== undefined) {
+      filter.price.$lte = query.maxPrice;
+    }
   }
 
-  let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
-  if (query.sort === "price_asc") sortOption = { price: 1 };
-  else if (query.sort === "price_desc") sortOption = { price: -1 };
-  else if (query.sort === "oldest") sortOption = { createdAt: 1 };
+  let sortOption: Record<string, 1 | -1> = {
+    createdAt: -1,
+  };
+
+  if (query.sort === "price_asc") {
+    sortOption = { price: 1 };
+  } else if (query.sort === "price_desc") {
+    sortOption = { price: -1 };
+  } else if (query.sort === "oldest") {
+    sortOption = { createdAt: 1 };
+  }
 
   const [products, total] = await Promise.all([
     Product.find(filter)
@@ -238,6 +258,7 @@ export const listProducts = async (query: ListProductsQuery) => {
       .sort(sortOption)
       .skip(skip)
       .limit(limit),
+
     Product.countDocuments(filter),
   ]);
 
