@@ -14,12 +14,13 @@ export const createOrderHandler = async (
       throw new AppError(401, "UNAUTHORIZED", "Authentication required");
     }
 
-    const { cartItems, shippingAddress } = req.body;
+    const { cartItems, shippingAddress, promoCode } = req.body;
 
     const order = await orderService.createOrder({
       userId: new Types.ObjectId(req.user.id),
       cartItems,
       shippingAddress,
+      promoCode,
     });
 
     sendSuccess(res, 201, "Order created successfully", order);
