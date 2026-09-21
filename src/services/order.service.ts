@@ -18,8 +18,7 @@ import { canTransition, PAYMENT_ONLY_STATUSES } from "../utils/orderStatus.js";
 import * as orderEmailService from "./orderEmail.service.js";
 import * as promoService from "./promo.service.js";
 import { calculateBreakdown } from "./checkout.service.js";
-
-
+import * as notificationService from "./notification.service.js";
 
 interface CreateOrderInput {
   userId: Types.ObjectId;
@@ -105,6 +104,13 @@ export async function createOrder({
   }
 
   void orderEmailService.sendOrderCreatedEmail(order);
+  
+  void notificationService.notifyUser({
+    userId: order.user.toString(),
+    type: "order_created",
+    title: `Order placed`,
+    content: `Your order ${order.orderNumber} has been received and is awaiting payment.`,
+  });
 
   return order;
 }
@@ -206,10 +212,14 @@ export async function updateOrderStatus(
 
   void orderEmailService.sendOrderStatusEmail(order);
 
+  void notificationService.notifyUser({
+    userId: order.user.toString(),
+    type: "order_status_changed",
+    title: `Order ${order.orderNumber} update`,
+    content: `Your order status is now: ${order.status}.`,
+  });
   return order;
 }
-
-
 
 export interface ListSellerOrdersQuery {
   page?: number;

@@ -8,15 +8,24 @@ import { sendSuccess } from "../utils/response.js";
 export const previewCheckout = async (
   req: Request,
   res: Response,
-): Promise<void> => {
-  const userId = req.user!.id;
-  const { promoCode } = req.body;
+  next: NextFunction,
+) => {
+  try {
+    if (!req.user) {
+      throw new AppError(401, "UNAUTHORIZED", "Authentication required");
+    }
 
-  const breakdown = await buildBreakdownFromCart(userId, promoCode);
+    const { promoCode } = req.body;
+    const userId = req.user.id;
 
-  sendSuccess(res, 200, "Checkout preview generated successfully", {
-    breakdown,
-  });
+    const breakdown = await buildBreakdownFromCart(userId, promoCode as string);
+
+    sendSuccess(res, 200, "Checkout preview generated successfully", {
+      breakdown,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 
@@ -50,4 +59,5 @@ export const createCheckoutHandler = async (
   } catch (err) {
     next(err);
   }
+}
 };

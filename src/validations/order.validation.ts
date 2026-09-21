@@ -1,8 +1,6 @@
 import { z } from "zod";
 
-const objectId = z
-  .string()
-  .regex(/^[0-9a-fA-F]{24}$/, "Invalid ID format");
+const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ID format");
 
 const cartItemSchema = z.object({
   product: objectId,
@@ -22,9 +20,7 @@ const shippingAddressSchema = z.object({
 
 export const createOrderSchema = z.object({
   body: z.object({
-    cartItems: z
-      .array(cartItemSchema)
-      .min(1, "At least one item is required"),
+    cartItems: z.array(cartItemSchema).min(1, "At least one item is required"),
     shippingAddress: shippingAddressSchema,
     promoCode: z.string().trim().min(1).max(50).optional(),
   }),
@@ -41,16 +37,11 @@ export const updateOrderStatusSchema = z.object({
     orderId: objectId,
   }),
   body: z.object({
-    status: z.enum([
-      "processing",
-      "shipped",
-      "delivered",
-      "cancelled",
-    ]),
+    status: z.enum(["processing", "shipped", "delivered", "cancelled"]),
   }),
 });
 
-export const listOrdersSchema = z.object({
+export const listSellerOrdersSchema = z.object({
   query: z.object({
     page: z.coerce.number().int().min(1).optional(),
     limit: z.coerce.number().int().min(1).max(50).optional(),
@@ -66,13 +57,5 @@ export const listOrdersSchema = z.object({
       ])
       .optional(),
     user: objectId.optional(),
-  }),
-});
-
-export const listSellerOrdersSchema = z.object({
-  query: z.object({
-    page: z.coerce.number().int().min(1).optional(),
-    limit: z.coerce.number().int().min(1).max(50).optional(),
-    status: z.string().optional(),
   }),
 });

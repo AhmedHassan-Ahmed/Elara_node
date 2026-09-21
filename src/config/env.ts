@@ -28,14 +28,23 @@ export const env = {
   )
     .replace(/^["']|["']$/g, "")
     .trim(),
+
+
+    
   smtpHost: process.env.EMAIL_HOST || "",
   smtpPort: process.env.EMAIL_PORT ? parseInt(process.env.EMAIL_PORT, 10) : 587,
   smtpUser: process.env.EMAIL_USER || process.env.SMTP_USER || "",
   smtpPass: process.env.EMAIL_PASSWORD || process.env.SMTP_PASS || "",
   frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
+  stripeSecretKey: (process.env.STRIPE_SECRET_KEY || "").replace(/^["']|["']$/g, "").trim(),
+  stripeWebhookSecret: (process.env.STRIPE_WEBHOOK_SECRET || "").replace(/^["']|["']$/g, "").trim(),
+  stripeCurrency: (process.env.STRIPE_CURRENCY || "usd").trim().toLowerCase(),
   adminEmail: process.env.ADMIN_EMAIL || "admin@example.com",
   adminPassword: process.env.ADMIN_PASSWORD || "Admin123!@#",
   cloudinaryCloudName: (process.env.CLOUDINARY_CLOUD_NAME || "").trim(),
   cloudinaryApiKey: (process.env.CLOUDINARY_API_KEY || "").trim(),
   cloudinaryApiSecret: (process.env.CLOUDINARY_API_SECRET || "").trim(),
+  vapidPublicKey: process.env.VAPID_PUBLIC_KEY || "",
+  vapidPrivateKey: process.env.VAPID_PRIVATE_KEY || "",
+  vapidSubject: process.env.VAPID_SUBJECT || "mailto:admin@example.com",
 };

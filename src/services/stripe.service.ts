@@ -7,6 +7,7 @@ import AppError from "../error/AppError.js";
 import { Order } from "../models/order.model.js";
 import { Payment, PaymentStatus } from "../models/payment.model.js";
 import { canTransition } from "../utils/orderStatus.js";
+import * as notificationService from "./notification.service.js";
 import * as orderEmailService from "./orderEmail.service.js";
 
 const toStripeAmount = (amount: number) => {
@@ -149,7 +150,7 @@ export async function createCheckoutSession(orderId: string, userId: string) {
           };
         }
       } catch {
-
+        
       }
     }
 
@@ -343,7 +344,15 @@ const syncPayment = async (
   ) {
     order.status = "confirmed";
     await order.save();
+
     void orderEmailService.sendOrderStatusEmail(order);
+
+    void notificationService.notifyUser({
+      userId: order.user.toString(),
+      type: "order_status_changed",
+      title: "Payment successful",
+      content: `Your payment for order ${order.orderNumber} was successful. Your order is now confirmed.`,
+    });
   } else if (
     status === "failed" &&
     order.status === "pending" &&
@@ -351,7 +360,15 @@ const syncPayment = async (
   ) {
     order.status = "failed";
     await order.save();
+
     void orderEmailService.sendOrderStatusEmail(order);
+
+    void notificationService.notifyUser({
+      userId: order.user.toString(),
+      type: "order_status_changed",
+      title: "Payment failed",
+      content: `Payment for order ${order.orderNumber} failed. Please try again.`,
+    });
   } else if (
     status === "cancelled" &&
     order.status === "pending" &&
@@ -359,7 +376,15 @@ const syncPayment = async (
   ) {
     order.status = "cancelled";
     await order.save();
+
     void orderEmailService.sendOrderStatusEmail(order);
+
+    void notificationService.notifyUser({
+      userId: order.user.toString(),
+      type: "order_status_changed",
+      title: "Payment cancelled",
+      content: `Payment for order ${order.orderNumber} was cancelled. You can try again if you still want to place the order.`,
+    });
   } else if (order.isModified("paymentId")) {
     await order.save();
   }

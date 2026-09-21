@@ -128,7 +128,6 @@ export const listPromos = async (query: ListPromosQuery) => {
   return buildPaginatedResponse(promos, total, page, limit, "promos");
 };
 
-
 export interface ValidatePromoResult {
   promo: {
     _id: string;
