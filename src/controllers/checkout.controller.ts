@@ -4,7 +4,6 @@ import * as stripeService from "../services/stripe.service.js";
 import { buildBreakdownFromCart } from "../services/checkout.service.js";
 import { sendSuccess } from "../utils/response.js";
 
-
 export const previewCheckout = async (
   req: Request,
   res: Response,
@@ -27,7 +26,6 @@ export const previewCheckout = async (
     next(err);
   }
 };
-
 
 export const createCheckoutHandler = async (
   req: Request,
@@ -59,5 +57,4 @@ export const createCheckoutHandler = async (
   } catch (err) {
     next(err);
   }
-}
 };
