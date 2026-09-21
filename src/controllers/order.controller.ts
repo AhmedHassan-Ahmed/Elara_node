@@ -4,7 +4,7 @@ import * as orderService from "../services/order.service.js";
 import { sendSuccess } from "../utils/response.js";
 import AppError from "../error/AppError.js";
 
-export const createOrderHandler = async (
+export const createOrder = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -29,7 +29,7 @@ export const createOrderHandler = async (
   }
 };
 
-export const getOrderHistoryHandler = async (
+export const getMyOrders = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -50,7 +50,7 @@ export const getOrderHistoryHandler = async (
   }
 };
 
-export const getOrderByIdHandler = async (
+export const getOrderById = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -71,7 +71,7 @@ export const getOrderByIdHandler = async (
   }
 };
 
-export const listAllOrdersHandler = async (
+export const listAllOrders = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -84,7 +84,7 @@ export const listAllOrdersHandler = async (
   }
 };
 
-export const updateOrderStatusHandler = async (
+export const updateOrderStatus = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -100,7 +100,7 @@ export const updateOrderStatusHandler = async (
   }
 };
 
-export const getSellerOrders = async (
+export const listSellerOrders = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
