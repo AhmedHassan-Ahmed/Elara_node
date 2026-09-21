@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import {
   Order,
   IOrderItem,
@@ -281,3 +281,31 @@ export const getSellerOrderById = async (sellerId: string, orderId: string) => {
 
   return scopeItemsToSeller(order, sellerId);
 };
+
+export async function decrementOrderStock(
+  order: IOrder,
+  session?: mongoose.ClientSession,
+) {
+  for (const item of order.items) {
+    const result = await Product.updateOne(
+      {
+        _id: item.product,
+        stock: { $gte: item.quantity },
+      },
+      {
+        $inc: {
+          stock: -item.quantity,
+        },
+      },
+      { session },
+    );
+
+    if (result.modifiedCount !== 1) {
+      throw new AppError(
+        409,
+        "INSUFFICIENT_STOCK",
+        `Not enough stock for "${item.name}"`,
+      );
+    }
+  }
+}

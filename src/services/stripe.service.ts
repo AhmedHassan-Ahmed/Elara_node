@@ -9,6 +9,7 @@ import { Payment, PaymentStatus } from "../models/payment.model.js";
 import { canTransition } from "../utils/orderStatus.js";
 import * as notificationService from "./notification.service.js";
 import * as orderEmailService from "./orderEmail.service.js";
+import * as orderService from "./order.service.js";
 
 const toStripeAmount = (amount: number) => {
   const value = Math.round(amount * 100);
@@ -37,7 +38,6 @@ const getOrderForUser = async (orderId: string, userId: string) => {
 
 const frontendUrl = env.frontendUrl.replace(/\/$/, "");
 
-
 const buildLineItems = (
   order: any,
   breakdown: {
@@ -48,7 +48,6 @@ const buildLineItems = (
   },
 ): Stripe.Checkout.SessionCreateParams.LineItem[] => {
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
-
 
   for (const item of order.items) {
     lineItems.push({
@@ -72,7 +71,6 @@ const buildLineItems = (
     });
   }
 
-
   if (breakdown.tax > 0) {
     lineItems.push({
       quantity: 1,
@@ -84,7 +82,6 @@ const buildLineItems = (
     });
   }
 
-
   if (breakdown.discount > 0 && lineItems.length > 0) {
     const discountCents = toStripeAmount(breakdown.discount);
     const first = lineItems[0];
@@ -93,13 +90,11 @@ const buildLineItems = (
     const firstTotal = firstUnit * firstQty;
 
     if (discountCents <= firstTotal) {
- 
       const newFirstTotal = firstTotal - discountCents;
       const newUnit = Math.floor(newFirstTotal / firstQty);
       const remainder = newFirstTotal - newUnit * firstQty;
 
       first.price_data!.unit_amount = newUnit;
-
 
       if (remainder > 0 && lineItems.length > 1) {
         const second = lineItems[1];
@@ -149,9 +144,7 @@ export async function createCheckoutSession(orderId: string, userId: string) {
             checkoutUrl: existingSession.url,
           };
         }
-      } catch {
-        
-      }
+      } catch {}
     }
 
     await Payment.deleteOne({ _id: existingPayment._id });
@@ -161,7 +154,6 @@ export async function createCheckoutSession(orderId: string, userId: string) {
     (sum: number, item: any) => sum + item.price * item.quantity,
     0,
   );
-
 
   const shipping = subtotal > 0 ? 50 : 0;
   const tax = +(subtotal * 0.14).toFixed(2);
@@ -342,6 +334,12 @@ const syncPayment = async (
     order.status === "pending" &&
     canTransition(order.status, "confirmed")
   ) {
+    const alreadyPaid = existingPayment?.status === "succeeded";
+
+    if (!alreadyPaid) {
+      await orderService.decrementOrderStock(order);
+    }
+
     order.status = "confirmed";
     await order.save();
 
