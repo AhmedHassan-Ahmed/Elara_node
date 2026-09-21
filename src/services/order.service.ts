@@ -22,18 +22,27 @@ import * as notificationService from "./notification.service.js";
 
 interface CreateOrderInput {
   userId: Types.ObjectId;
-  cartItems: ICartItem[];
+  cartId: Types.ObjectId;
   shippingAddress: IOrder["shippingAddress"];
-  promoCode?: string; 
+  promoCode?: string;
 }
 
 export async function createOrder({
   userId,
-  cartItems,
+  cartId,
   shippingAddress,
   promoCode,
 }: CreateOrderInput): Promise<IOrder> {
-  if (!cartItems.length) {
+  const cart = await Cart.findOne({
+    _id: cartId,
+    user: userId,
+  });
+
+  if (!cart) {
+    throw new AppError(404, "CART_NOT_FOUND", "Cart not found");
+  }
+
+  if (!cart.items.length) {
     throw new AppError(
       400,
       "EMPTY_CART",
@@ -41,13 +50,11 @@ export async function createOrder({
     );
   }
 
-
-  const breakdown = await calculateBreakdown(cartItems, promoCode);
-
+  const breakdown = await calculateBreakdown(cart.items, promoCode);
 
   const items: IOrderItem[] = [];
 
-  for (const cartItem of cartItems) {
+  for (const cartItem of cart.items) {
     const product = await Product.findById(cartItem.product);
 
     if (!product) {
@@ -85,7 +92,6 @@ export async function createOrder({
 
   const orderNumber = generateOrderNumber();
 
- 
   const order = await Order.create({
     user: userId,
     orderNumber,
@@ -95,27 +101,31 @@ export async function createOrder({
     status: "pending",
   });
 
- 
-  await Cart.findOneAndUpdate({ user: userId }, { items: [] });
-
+  await Cart.findOneAndUpdate(
+    {
+      _id: cartId,
+      user: userId,
+    },
+    {
+      items: [],
+    },
+  );
 
   if (breakdown.promoId) {
     await promoService.incrementPromoUsage(breakdown.promoId);
   }
 
   void orderEmailService.sendOrderCreatedEmail(order);
-  
+
   void notificationService.notifyUser({
     userId: order.user.toString(),
     type: "order_created",
-    title: `Order placed`,
+    title: "Order placed",
     content: `Your order ${order.orderNumber} has been received and is awaiting payment.`,
   });
 
   return order;
 }
-
-
 
 export async function getOrderHistory(
   userId: Types.ObjectId,
@@ -151,8 +161,6 @@ export async function getOrderById(user: UserAuthContext, orderId: string) {
 
   return order;
 }
-
-
 
 interface ListAllOrdersQuery {
   page?: number;
