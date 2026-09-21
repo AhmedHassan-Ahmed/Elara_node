@@ -37,6 +37,81 @@ const getOrderForUser = async (orderId: string, userId: string) => {
 
 const frontendUrl = env.frontendUrl.replace(/\/$/, "");
 
+
+const buildLineItems = (
+  order: any,
+  breakdown: {
+    subtotal: number;
+    shipping: number;
+    tax: number;
+    discount: number;
+  },
+): Stripe.Checkout.SessionCreateParams.LineItem[] => {
+  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+
+
+  for (const item of order.items) {
+    lineItems.push({
+      quantity: item.quantity,
+      price_data: {
+        currency: env.stripeCurrency,
+        unit_amount: toStripeAmount(item.price),
+        product_data: { name: item.name },
+      },
+    });
+  }
+
+  if (breakdown.shipping > 0) {
+    lineItems.push({
+      quantity: 1,
+      price_data: {
+        currency: env.stripeCurrency,
+        unit_amount: toStripeAmount(breakdown.shipping),
+        product_data: { name: "Shipping" },
+      },
+    });
+  }
+
+
+  if (breakdown.tax > 0) {
+    lineItems.push({
+      quantity: 1,
+      price_data: {
+        currency: env.stripeCurrency,
+        unit_amount: toStripeAmount(breakdown.tax),
+        product_data: { name: "Tax (14%)" },
+      },
+    });
+  }
+
+
+  if (breakdown.discount > 0 && lineItems.length > 0) {
+    const discountCents = toStripeAmount(breakdown.discount);
+    const first = lineItems[0];
+    const firstUnit = first.price_data!.unit_amount!;
+    const firstQty = Number(first.quantity ?? 1);
+    const firstTotal = firstUnit * firstQty;
+
+    if (discountCents <= firstTotal) {
+ 
+      const newFirstTotal = firstTotal - discountCents;
+      const newUnit = Math.floor(newFirstTotal / firstQty);
+      const remainder = newFirstTotal - newUnit * firstQty;
+
+      first.price_data!.unit_amount = newUnit;
+
+
+      if (remainder > 0 && lineItems.length > 1) {
+        const second = lineItems[1];
+        second.price_data!.unit_amount =
+          second.price_data!.unit_amount! + remainder;
+      }
+    }
+  }
+
+  return lineItems;
+};
+
 export async function createCheckoutSession(orderId: string, userId: string) {
   const order = await getOrderForUser(orderId, userId);
 
@@ -74,23 +149,33 @@ export async function createCheckoutSession(orderId: string, userId: string) {
             checkoutUrl: existingSession.url,
           };
         }
-      } catch {}
+      } catch {
+        
+      }
     }
 
     await Payment.deleteOne({ _id: existingPayment._id });
   }
 
-  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
-    order.items.map((item) => ({
-      quantity: item.quantity,
-      price_data: {
-        currency: env.stripeCurrency,
-        unit_amount: toStripeAmount(item.price),
-        product_data: {
-          name: item.name,
-        },
-      },
-    }));
+  const subtotal = order.items.reduce(
+    (sum: number, item: any) => sum + item.price * item.quantity,
+    0,
+  );
+
+
+  const shipping = subtotal > 0 ? 50 : 0;
+  const tax = +(subtotal * 0.14).toFixed(2);
+  const discount = +Math.max(
+    0,
+    subtotal + shipping + tax - order.totalAmount,
+  ).toFixed(2);
+
+  const lineItems = buildLineItems(order, {
+    subtotal,
+    shipping,
+    tax,
+    discount,
+  });
 
   const expectedAmount = toStripeAmount(order.totalAmount);
   const calculatedAmount = lineItems.reduce(
@@ -103,7 +188,7 @@ export async function createCheckoutSession(orderId: string, userId: string) {
     throw new AppError(
       409,
       "ORDER_TOTAL_MISMATCH",
-      "The order total does not match its item totals",
+      `The order total (${expectedAmount / 100}) does not match its item totals (${calculatedAmount / 100})`,
     );
   }
 
