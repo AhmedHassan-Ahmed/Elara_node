@@ -12,10 +12,18 @@ import {
 
 const router = Router();
 
-router.post("/", authenticate, createCheckoutHandler);
+router.post(
+  "/preview",
+  authenticate,
+  validate(previewCheckoutSchema),
+  previewCheckout,
+);
 
-router.post("/preview", validate(previewCheckoutSchema), previewCheckout);
-
-router.post("/", validate(createCheckoutSchema), createCheckoutHandler);
+router.post(
+  "/",
+  authenticate,
+  validate(createCheckoutSchema),
+  createCheckoutHandler,
+);
 
 export default router;
