@@ -16,3 +16,14 @@ export const createCheckoutSchema = z.object({
     orderId: objectId,
   }),
 });
+
+export const createCheckoutWithPromoSchema = z.object({
+  body: z.object({
+    orderId: objectId,
+    promoCode: z
+      .string({ message: "promoCode is required" })
+      .trim()
+      .min(1, "promoCode is required")
+      .max(50, "promoCode is too long"),
+  }),
+});
