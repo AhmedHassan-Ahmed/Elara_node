@@ -331,39 +331,3 @@ export async function handleStripeEvent(event: Stripe.Event) {
       return null;
   }
 }
-
-export async function handleStripeEvent(event: Stripe.Event) {
-  switch (event.type) {
-    case "checkout.session.completed": {
-      const session = event.data.object as Stripe.Checkout.Session;
-      if (session.payment_status === "paid") {
-        return syncPayment(session, "succeeded");
-      }
-      return syncPayment(session, "pending");
-    }
-
-    case "checkout.session.async_payment_succeeded": {
-      return syncPayment(
-        event.data.object as Stripe.Checkout.Session,
-        "succeeded",
-      );
-    }
-
-    case "checkout.session.async_payment_failed": {
-      return syncPayment(
-        event.data.object as Stripe.Checkout.Session,
-        "failed",
-      );
-    }
-
-    case "checkout.session.expired": {
-      return syncPayment(
-        event.data.object as Stripe.Checkout.Session,
-        "cancelled",
-      );
-    }
-
-    default:
-      return null;
-  }
-}
