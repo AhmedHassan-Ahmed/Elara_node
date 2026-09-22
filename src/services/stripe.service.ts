@@ -40,19 +40,84 @@ const frontendUrl = env.frontendUrl.replace(/\/$/, "");
 
 const buildLineItems = (
   order: any,
+  breakdown: {
+    subtotal: number;
+    shipping: number;
+    tax: number;
+    discount: number;
+  },
 ): Stripe.Checkout.SessionCreateParams.LineItem[] => {
-  return [
-    {
+  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+
+  for (const item of order.items) {
+    lineItems.push({
+      quantity: item.quantity,
+      price_data: {
+        currency: env.stripeCurrency,
+        unit_amount: toStripeAmount(item.price),
+        product_data: {
+          name: item.name,
+        },
+      },
+    });
+  }
+
+  if (breakdown.shipping > 0) {
+    lineItems.push({
       quantity: 1,
       price_data: {
         currency: env.stripeCurrency,
-        unit_amount: toStripeAmount(order.totalAmount),
+        unit_amount: toStripeAmount(breakdown.shipping),
         product_data: {
-          name: `Order ${order.orderNumber}`,
+          name: "Shipping",
         },
       },
-    },
-  ];
+    });
+  }
+
+
+  if (breakdown.tax > 0) {
+    lineItems.push({
+      quantity: 1,
+      price_data: {
+        currency: env.stripeCurrency,
+        unit_amount: toStripeAmount(breakdown.tax),
+        product_data: {
+          name: "Tax (14%)",
+        },
+      },
+    });
+  }
+
+  if (breakdown.discount > 0 && lineItems.length > 0) {
+    const discountCents = toStripeAmount(breakdown.discount);
+
+    const first = lineItems[0];
+
+    const unitAmount = first.price_data!.unit_amount!;
+    const quantity = Number(first.quantity ?? 1);
+
+    const productTotal = unitAmount * quantity;
+
+    if (discountCents <= productTotal) {
+      const newTotal = productTotal - discountCents;
+
+      const newUnitAmount = Math.floor(newTotal / quantity);
+
+      first.price_data!.unit_amount = newUnitAmount;
+
+      const remainder = newTotal - newUnitAmount * quantity;
+
+      if (remainder > 0 && lineItems.length > 1) {
+        const second = lineItems[1];
+
+        second.price_data!.unit_amount =
+          second.price_data!.unit_amount! + remainder;
+      }
+    }
+  }
+
+  return lineItems;
 };
 
 export async function createCheckoutSession(orderId: string, userId: string) {
@@ -68,10 +133,56 @@ export async function createCheckoutSession(orderId: string, userId: string) {
 
   const stripe = getStripe();
 
-  const lineItems = buildLineItems(order);
+  const existingPayment = await Payment.findOne({ order: order._id });
+  if (existingPayment) {
+    if (existingPayment.status === "succeeded") {
+      throw new AppError(
+        409,
+        "ORDER_ALREADY_PAID",
+        "This order has already been paid",
+      );
+    }
+
+    if (existingPayment.status === "pending") {
+      try {
+        const existingSession = await stripe.checkout.sessions.retrieve(
+          existingPayment.stripePaymentId,
+        );
+
+        if (existingSession.status === "open" && existingSession.url) {
+          return {
+            order,
+            payment: existingPayment,
+            checkoutSessionId: existingSession.id,
+            checkoutUrl: existingSession.url,
+          };
+        }
+      } catch {}
+    }
+
+    await Payment.deleteOne({ _id: existingPayment._id });
+  }
+
+  const subtotal = order.items.reduce(
+    (sum: number, item: any) => sum + item.price * item.quantity,
+    0,
+  );
+
+  const shipping = subtotal > 0 ? 50 : 0;
+  const tax = +(subtotal * 0.14).toFixed(2);
+  const discount = +Math.max(
+    0,
+    subtotal + shipping + tax - order.totalAmount,
+  ).toFixed(2);
+
+  const lineItems = buildLineItems(order, {
+    subtotal,
+    shipping,
+    tax,
+    discount,
+  });
 
   const expectedAmount = toStripeAmount(order.totalAmount);
-
   const calculatedAmount = lineItems.reduce(
     (sum, item) =>
       sum + (item.price_data?.unit_amount ?? 0) * Number(item.quantity ?? 0),
@@ -82,7 +193,7 @@ export async function createCheckoutSession(orderId: string, userId: string) {
     throw new AppError(
       409,
       "ORDER_TOTAL_MISMATCH",
-      `The order total (${expectedAmount / 100}) does not match Stripe line items (${calculatedAmount / 100})`,
+      `The order total (${expectedAmount / 100}) does not match its item totals (${calculatedAmount / 100})`,
     );
   }
 
@@ -104,12 +215,8 @@ export async function createCheckoutSession(orderId: string, userId: string) {
       paymentId: payment._id.toString(),
     },
 
-    success_url:
-      `${frontendUrl}/payment/success` +
-      `?session_id={CHECKOUT_SESSION_ID}` +
-      `&order_id=${order._id}`,
-
-    cancel_url: `${frontendUrl}/payment/cancelled` + `?order_id=${order._id}`,
+    success_url: `${frontendUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}&order_id=${order._id}`,
+    cancel_url: `${frontendUrl}/payment/cancelled?order_id=${order._id}`,
 
     client_reference_id: order._id.toString(),
   });
