@@ -27,13 +27,6 @@ router.get(
   orderController.getMyOrders,
 );
 
-router.get(
-  "/:orderId",
-  authenticate,
-  authorize("customer", "admin"),
-  validate(getOrderByIdSchema),
-  orderController.getOrderById,
-);
 
 router.get(
   "/admin",
@@ -49,6 +42,14 @@ router.patch(
   authorize("admin"),
   validate(updateOrderStatusSchema),
   orderController.updateOrderStatus,
+);
+
+router.get(
+  "/:orderId",
+  authenticate,
+  authorize("customer", "admin"),
+  validate(getOrderByIdSchema),
+  orderController.getOrderById,
 );
 
 router.get(

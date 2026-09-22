@@ -11,7 +11,7 @@ export const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 };
 
 
-export const PAYMENT_ONLY_STATUSES: OrderStatus[] = ["confirmed", "failed"];
+export const PAYMENT_ONLY_STATUSES: OrderStatus[] = ["confirmed", "failed" , "cancelled"];
 
 export function canTransition(from: OrderStatus, to: OrderStatus): boolean {
   return ALLOWED_TRANSITIONS[from].includes(to);
