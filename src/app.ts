@@ -20,11 +20,11 @@ import reviewRoutes from "./routes/review.routes.js";
 import newsletterRoutes from "./routes/newsletter.routes.js";
 import loyaltyRoutes from "./routes/loyalty.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
+
 import path from "path";
 
 
 const app = express();
-
 app.use(express.static(path.join(process.cwd(), "public")));
 app.use(
   helmet({
