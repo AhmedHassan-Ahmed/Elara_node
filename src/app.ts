@@ -17,7 +17,8 @@ import checkoutRoutes from "./routes/checkout.routes.js";
 
 import promoRoutes from "./routes/promo.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
-
+import newsletterRoutes from "./routes/newsletter.routes.js";
+import loyaltyRoutes from "./routes/loyalty.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 
 const app = express();
@@ -53,6 +54,8 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/seller/orders", sellerOrderRouter);
 app.use("/api/promos", promoRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/newsletters", newsletterRoutes);
+app.use("/api/rewards", loyaltyRoutes);
 
 app.use(errorHandler);
 
