@@ -21,6 +21,7 @@ export interface IUser extends Document {
     country?: string;
     postalCode?: string;
   };
+  rewardPoints: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -54,6 +55,11 @@ const userSchema = new Schema<IUser>(
       state: String,
       country: String,
       postalCode: String,
+    },
+    rewardPoints: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
   },
   { timestamps: true },
