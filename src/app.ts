@@ -13,7 +13,7 @@ import notificationRoute from "./routes/notification.routes.js";
 import errorHandler from "./middleware/errorHandler.js";
 import cartRoutes from "./routes/cart.routes.js";
 import checkoutRoutes from "./routes/checkout.routes.js";
-
+import helmet from "helmet";
 import promoRoutes from "./routes/promo.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
 import newsletterRoutes from "./routes/newsletter.routes.js";
