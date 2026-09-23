@@ -3,6 +3,7 @@ import * as adminController from "../controllers/admin.controller.js";
 import * as bannerController from "../controllers/banner.controller.js";
 import * as promoController from "../controllers/promo.controller.js";
 import * as reviewController from "../controllers/review.controller.js";
+import * as newsletterController from "../controllers/newsletter.controller.js";
 import { validate } from "../middleware/validation.middleware.js";
 import { authenticate, authorize } from "../middleware/auth.middleware.js";
 import { uploadSingleImage } from "../middleware/upload.middleware.js";
@@ -33,6 +34,7 @@ import {
 } from "../validations/promo.validation.js";
 
 import { moderateReviewSchema } from "../validations/review.validation.js";
+import { sendCampaignSchema } from "../validations/newsletter.validation.js";
 
 const router = Router();
 
@@ -131,6 +133,15 @@ router.patch(
   "/reviews/:reviewId",
   validate(moderateReviewSchema),
   reviewController.moderateReview,
+);
+
+
+router.get("/newsletters", newsletterController.listSubscribers);
+
+router.post(
+  "/newsletters/send",
+  validate(sendCampaignSchema),
+  newsletterController.sendCampaign,
 );
 
 export default router;
