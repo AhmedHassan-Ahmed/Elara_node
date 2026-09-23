@@ -19,15 +19,22 @@ import reviewRoutes from "./routes/review.routes.js";
 import newsletterRoutes from "./routes/newsletter.routes.js";
 import loyaltyRoutes from "./routes/loyalty.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
-
+import path from "path";
 const app = express();
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+
 
 app.set("trust proxy", 1);
+
+
+
+const app = express();
+app.use(express.static(path.join(process.cwd(), "public")));
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  }),
+);
 app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser());
 
