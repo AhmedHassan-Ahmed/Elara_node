@@ -53,13 +53,7 @@ router.get(
   orderController.listSellerOrders,
 );
 
-router.get(
-  "/:orderId",
-  authenticate,
-  authorize("customer", "admin"),
-  validate(getOrderByIdSchema),
-  orderController.getOrderById,
-);
+
 
 
 router.get(
@@ -68,6 +62,14 @@ router.get(
   authorize("seller"),
   validate(getOrderByIdSchema),
   orderController.getSellerOrderById,
+);
+
+router.get(
+  "/:orderId",
+  authenticate,
+  authorize("customer", "admin"),
+  validate(getOrderByIdSchema),
+  orderController.getOrderById,
 );
 
 export default router;
