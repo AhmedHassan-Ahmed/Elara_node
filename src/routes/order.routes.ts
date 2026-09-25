@@ -44,13 +44,6 @@ router.patch(
   orderController.updateOrderStatus,
 );
 
-router.get(
-  "/:orderId",
-  authenticate,
-  authorize("customer", "admin"),
-  validate(getOrderByIdSchema),
-  orderController.getOrderById,
-);
 
 router.get(
   "/seller",
@@ -59,6 +52,15 @@ router.get(
   validate(listSellerOrdersSchema),
   orderController.listSellerOrders,
 );
+
+router.get(
+  "/:orderId",
+  authenticate,
+  authorize("customer", "admin"),
+  validate(getOrderByIdSchema),
+  orderController.getOrderById,
+);
+
 
 router.get(
   "/seller/:orderId",
